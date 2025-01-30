@@ -34,7 +34,12 @@ public class ColorMatrixImage extends JPanel {
     }
 
     private void generateImage() {
-        image = new BufferedImage(SIZE * CELL_SIZE, SIZE * CELL_SIZE, BufferedImage.TYPE_INT_RGB);
+        image = new BufferedImage(
+                SIZE * CELL_SIZE,
+                SIZE * CELL_SIZE,
+                BufferedImage.TYPE_INT_RGB
+        );
+
         Graphics2D g2d = image.createGraphics();
 
         byte[] hashBytes = inputText.getBytes(StandardCharsets.UTF_8);
