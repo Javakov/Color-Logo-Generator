@@ -21,6 +21,12 @@ public class ColorMatrixImage extends JPanel {
         generateImage();
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(image, 0, 0, this);
+    }
+
     public void setInputText(String inputText) {
         this.inputText = inputText;
         generateImage();
@@ -133,15 +139,9 @@ public class ColorMatrixImage extends JPanel {
         return hash;
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(image, 0, 0, this);
-    }
-
     void saveImage() {
         try {
-            File outputFile = new File("gitlab_imgs/" + inputText + ".png");
+            File outputFile = new File("img/" + inputText + ".png");
             ImageIO.write(image, "png", outputFile);
             JOptionPane.showMessageDialog(this,
                     "Изображение сохранено как " + inputText + ".png");
