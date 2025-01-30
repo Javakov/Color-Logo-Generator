@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.util.*;
 
 public class ColorMatrixImage extends JPanel {
     public static final int SIZE = 8;
@@ -78,7 +78,31 @@ public class ColorMatrixImage extends JPanel {
             }
         }
 
+        Random edgeRand = new Random(baseSeed);
+        drawEdgeSquares(g2d, edgeRand, 0, SIZE/2);
+        drawEdgeSquares(g2d, edgeRand, SIZE/2, SIZE);
+
         g2d.dispose();
+    }
+
+    private void drawEdgeSquares(Graphics2D g2d, Random rand, int startRow, int endRow) {
+        int[] edgeColumns = {0, 1, SIZE-2, SIZE-1};
+
+        for(int i = 0; i < 2; i++) {
+            int col = edgeColumns[rand.nextInt(edgeColumns.length)];
+            int mirroredCol = SIZE - 1 - col;
+
+            for(int j = 0; j < 2; j++) {
+                int row = startRow + rand.nextInt(endRow - startRow);
+
+                if(startRow == 0) row = Math.min(row, 1);
+                else row = Math.max(row, SIZE - 2);
+
+                g2d.setColor(Color.WHITE);
+                g2d.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                g2d.fillRect(mirroredCol * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+        }
     }
 
     private void drawTriangle(Graphics2D g2d, int x, int y, int side) {
@@ -144,10 +168,10 @@ public class ColorMatrixImage extends JPanel {
             File outputFile = new File("img/" + inputText + ".png");
             ImageIO.write(image, "png", outputFile);
             JOptionPane.showMessageDialog(this,
-                    "Изображение сохранено как " + inputText + ".png");
+                    "Img download to img/" + inputText + ".png");
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this,
-                    "Ошибка при сохранении!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    "Error via download", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
