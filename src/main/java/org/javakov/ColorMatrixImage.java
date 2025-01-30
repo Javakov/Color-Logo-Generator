@@ -11,7 +11,7 @@ import java.util.*;
 
 public class ColorMatrixImage extends JPanel {
     public static final int SIZE = 8;
-    public static final int CELL_SIZE = 50;
+    public static final int CELL_SIZE = 100;
     private BufferedImage image;
     private String inputText;
     private Color accentColor;
