@@ -87,21 +87,39 @@ public class ColorMatrixImage extends JPanel {
         drawEdgeSquares(g2d, edgeRand, 0, SIZE/2);
         drawEdgeSquares(g2d, edgeRand, SIZE/2, SIZE);
 
+        checkAndReplaceDenseAreas(g2d, baseSeed);
+
         g2d.dispose();
     }
 
-    private void drawEdgeSquares(Graphics2D g2d, Random rand, int startRow, int endRow) {
-        int[] edgeColumns = {0, 1, SIZE-2, SIZE-1};
+    private void drawEdgeSquares(Graphics2D g2d,  Random baseSeed, int startRow, int endRow) {
+        boolean isTopHalf = (startRow == 0);
+        int halfSeed = baseSeed.nextInt() + (isTopHalf ? 0 : 1);
+        Random halfRand = new Random(halfSeed);
 
-        for(int i = 0; i < 2; i++) {
-            int col = edgeColumns[rand.nextInt(edgeColumns.length)];
+        boolean useNewVariant = halfRand.nextBoolean();
+
+        int[] edgeColumns;
+        if (useNewVariant) {
+            int mid1 = (SIZE/2) - 1;
+            int mid2 = SIZE/2;
+            edgeColumns = new int[]{mid1, mid2};
+        } else {
+            edgeColumns = new int[]{0, 1, SIZE-2, SIZE-1};
+        }
+
+        for (int i = 0; i < 2; i++) {
+            int col = edgeColumns[halfRand.nextInt(edgeColumns.length)];
             int mirroredCol = SIZE - 1 - col;
 
-            for(int j = 0; j < 2; j++) {
-                int row = startRow + rand.nextInt(endRow - startRow);
+            for (int j = 0; j < 2; j++) {
+                int row = startRow + halfRand.nextInt(endRow - startRow);
 
-                if(startRow == 0) row = Math.min(row, 1);
-                else row = Math.max(row, SIZE - 2);
+                if (startRow == 0) {
+                    row = Math.min(row, 1);
+                } else {
+                    row = Math.max(row, SIZE - 2);
+                }
 
                 g2d.setColor(Color.WHITE);
                 g2d.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -158,6 +176,52 @@ public class ColorMatrixImage extends JPanel {
 
     private int mirrorSideVertically(int side) {
         return (side == 2) ? 3 : (side == 3) ? 2 : side;
+    }
+
+    private void checkAndReplaceDenseAreas(Graphics2D g2d, int baseSeed) {
+        int[][] grid = new int[SIZE][SIZE];
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                int color = image.getRGB(col * CELL_SIZE + CELL_SIZE / 2, row * CELL_SIZE + CELL_SIZE / 2);
+                grid[row][col] = (color == accentColor.getRGB()) ? 1 : 0;
+            }
+        }
+
+        Random rand = new Random(baseSeed);
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                if (grid[row][col] == 1 && countNeighbors(grid, row, col) > 8) {
+                    int x = col * CELL_SIZE;
+                    int y = row * CELL_SIZE;
+
+                    g2d.setColor(Color.WHITE);
+                    g2d.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+
+                    if (rand.nextBoolean()) {
+                        int halfSquareSide = rand.nextInt(2);
+                        drawHalfSquare(g2d, x, y, halfSquareSide);
+                    } else {
+                        int triangleSide = rand.nextInt(2);
+                        drawTriangle(g2d, x, y, triangleSide);
+                    }
+                }
+            }
+        }
+    }
+
+    private int countNeighbors(int[][] grid, int row, int col) {
+        int count = 0;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (i == 0 && j == 0) continue;
+                int newRow = row + i;
+                int newCol = col + j;
+                if (newRow >= 0 && newRow < SIZE && newCol >= 0 && newCol < SIZE) {
+                    count += grid[newRow][newCol];
+                }
+            }
+        }
+        return count;
     }
 
     private static int hashCodeFromBytes(byte[] bytes) {
